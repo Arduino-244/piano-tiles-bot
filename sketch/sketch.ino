@@ -69,15 +69,7 @@ class KeyController {
     ServoController servo;
     PhotoresistorController photoresistor;
   public:
-    KeyController(ServoController &s) : servo(s) {
-      this->servo = s;
-    }
-    KeyController(PhotoresistorController &r) : photoresistor(r) {
-      this->photoresistor = r;
-    }
-    KeyController(byte PRPin, byte servoPin) {
-      this->servoPin = servoPin;
-      this->PRPin = PRPin;
+    KeyController(byte PRPin, byte servoPin) : servoPin(servoPin), PRPin(PRPin), servo(servoPin), photoresistor(PRPin) {
       init();
     }
     void init() {
@@ -92,10 +84,11 @@ class KeyController {
     }
 };
 
-KeyController key1(PHOTO_SENSOR_PORT1, SERVO_PORT1)
-KeyController key2(PHOTO_SENSOR_PORT2, SERVO_PORT2)
-KeyController key3(PHOTO_SENSOR_PORT3, SERVO_PORT3)
-KeyController key4(PHOTO_SENSOR_PORT4, SERVO_PORT4)
+/* Initializing */
+KeyController key1(PHOTO_SENSOR_PORT1, SERVO_PORT1);
+KeyController key2(PHOTO_SENSOR_PORT2, SERVO_PORT2);
+KeyController key3(PHOTO_SENSOR_PORT3, SERVO_PORT3);
+KeyController key4(PHOTO_SENSOR_PORT4, SERVO_PORT4);
 
 void setup() {
   delay(1000);
