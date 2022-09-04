@@ -5,17 +5,17 @@
  - **4x** Micro-Servos
  - **4x** Photoresistors
  - **4x** Popsicle sticks
- - **4x** Ball-shaped tinfoil
+ - **4x** Piece of tinfoil (Ball-shaped)
  - Cables
  - Piece of cardboard or any other material that will not damage the screen.
 
 # Libraries used:
- - **AceRoutine**:
-  Used to run multiple tasks at once, minimizing delay and making it as accurate and fast as possible.
-  
+ - **Servo**:
+  Micro Servo library
+   
 # References used:
-  - ![Servo](https://www.arduino.cc/reference/en/libraries/servo/)
-  - ![Photoresistor](https://create.arduino.cc/projecthub/Ayeon0122/reading-a-photoresistor-1e705e)
-  - ![AceRoutine](https://github.com/bxparks/AceRoutine)
+  - [Servo](https://www.arduino.cc/reference/en/libraries/servo/)
+  - [Photoresistor](https://create.arduino.cc/projecthub/Ayeon0122/reading-a-photoresistor-1e705e)
+  - [Arduino Discord Server](https://discord.gg/vJvhANh4we)
 
 Developed for the **ExpoEtec** event! 💙
