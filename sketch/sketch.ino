@@ -91,7 +91,8 @@ KeyController key3(PHOTO_SENSOR_PORT3, SERVO_PORT3);
 KeyController key4(PHOTO_SENSOR_PORT4, SERVO_PORT4);
 
 void setup() {
-  delay(1000);
+  Serial.begin(9600);
+  Serial.println("Began");
 }
 
 void loop() {
