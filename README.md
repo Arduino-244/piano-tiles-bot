@@ -13,6 +13,9 @@
  - **AceRoutine**:
   Used to run multiple tasks at once, minimizing delay and making it as accurate and fast as possible.
   
-
+# References used:
+  - ![Servo](https://www.arduino.cc/reference/en/libraries/servo/)
+  - ![Photoresistor](https://create.arduino.cc/projecthub/Ayeon0122/reading-a-photoresistor-1e705e)
+  - ![AceRoutine](https://github.com/bxparks/AceRoutine)
 
 Developed for the **ExpoEtec** event! 💙
