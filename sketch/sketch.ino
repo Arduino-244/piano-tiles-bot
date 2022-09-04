@@ -8,35 +8,87 @@
 
   (other information may be added here)
 */
+#include <Servo.h>
 #include <AceRoutine.h>
 using namespace ace_routine;
 
-const int 1_PHOTO_SENSOR_PORT = 0;
-const int 2_PHOTO_SENSOR_PORT = 1;
-const int 3_PHOTO_SENSOR_PORT = 2;
-const int 4_PHOTO_SENSOR_PORT = 3;
+/* Setting Ports */
+int PHOTO_SENSOR_PORT1 = 0;
+int PHOTO_SENSOR_PORT2 = 1;
+int PHOTO_SENSOR_PORT3 = 2;
+int PHOTO_SENSOR_PORT4 = 3;
 
-const int 1_SERVO_PORT = 4;
-const int 2_SERVO_PORT = 5;
-const int 3_SERVO_PORT = 6;
-const int 4_SERVO_PORT = 7;
+int SERVO_PORT1 = 4;
+int SERVO_PORT2 = 5;
+int SERVO_PORT3 = 6;
+int SERVO_PORT4 = 7;
 
-int lightCalibration = [];
-int lightValue = [];
+/* Initializing servo objects */
+Servo SERVO_CONTROLLER1;
+Servo SERVO_CONTROLLER2;
+Servo SERVO_CONTROLLER3;
+Servo SERVO_CONTROLLER4;
 
-const calibrationBalance = 50;
+/* Util lists */
+int lightCalibration;
+int lightValue;
 
-void check_photo_resistor(int sensor_port) {
-  lightValue[sensor_port] = analogRead(sensor_port);
-  if (lightValue[sensor_port] < lightCalibration[sensor_port] - calibrationBalance) {
-    
+/* Constants */
+const int CALIBRATION_BALANCE = 50;
+const int DEFAULT_WAIT_TIME = 100;
+
+void write_servo(int sensorPort, boolean isDark) {
+  Servo servoObject;
+  switch(sensorPort) {
+    case 0:
+      servoObject = SERVO_CONTROLLER1;
+      break;
+    case 1:
+      servoObject = SERVO_CONTROLLER2;
+      break;
+    case 2:
+      servoObject = SERVO_CONTROLLER3;
+      break;
+    case 3:
+      servoObject = SERVO_CONTROLLER4;
+      break;
+  }
+  int angle = isDark ? 120 : 0;
+  servoObject.write(angle);
+}
+
+boolean check_photo_resistor(int sensorPort_) {
+  lightValue[sensorPort] = analogRead(sensorPort);
+  return 
+    lightValue[sensorPort] < 
+    (lightCalibration[sensorPort] - CALIBRATION_BALANCE);
+}
+
+COROUTINE(checkResistor1) {
+  COROUTINE_LOOP() {
+    write_servo(PHOTO_SENSOR_PORT1, check_photo_resistor(PHOTO_SENSOR_PORT1));
+    COROUTINE_DELAY(DEFAULT_WAIT_TIME);
   }
 }
 
-COROUTINE(blinkLed) {
+COROUTINE(checkResistor2) {
   COROUTINE_LOOP() {
-    digitalWrite(LED, LED_ON);
-    COROUTINE_DELAY(500);
+    write_servo(PHOTO_SENSOR_PORT2, check_photo_resistor(PHOTO_SENSOR_PORT2));
+    COROUTINE_DELAY(DEFAULT_WAIT_TIME);
+  }
+}
+
+COROUTINE(checkResistor3) {
+  COROUTINE_LOOP() {
+    write_servo(PHOTO_SENSOR_PORT3, check_photo_resistor(PHOTO_SENSOR_PORT3));
+    COROUTINE_DELAY(DEFAULT_WAIT_TIME);
+  }
+}
+
+COROUTINE(checkResistor4) {
+  COROUTINE_LOOP() {
+    write_servo(PHOTO_SENSOR_PORT4, check_photo_resistor(PHOTO_SENSOR_PORT4));
+    COROUTINE_DELAY(DEFAULT_WAIT_TIME);
   }
 }
 
@@ -45,19 +97,28 @@ void setup() {
   Serial.begin(115200);
   /*Avoid issues with serial taking a while to load*/
   while (!Serial);
-  /*Loading Pinmodes*/
-  pinMode(1_SERVO_PORT, OUTPUT);
-  pinMode(2_SERVO_PORT, OUTPUT);
-  pinMode(3_SERVO_PORT, OUTPUT);
-  pinMode(4_SERVO_PORT, OUTPUT);
+  /*Attaching servos°*/
+  SERVO_CONTROLLER1.attach(SERVO_PORT1);
+  SERVO_CONTROLLER2.attach(SERVO_PORT2);
+  SERVO_CONTROLLER3.attach(SERVO_PORT3);
+  SERVO_CONTROLLER4.attach(SERVO_PORT4);
+  /*Reseting servos to 0°*/
+  SERVO_CONTROLLER1.write(0);
+  SERVO_CONTROLLER2.write(0);
+  SERVO_CONTROLLER3.write(0);
+  SERVO_CONTROLLER4.write(0);
   /*Initializing calibration*/
-  lightCalibration[1_PHOTO_SENSOR_PORT] = analogRead(1_PHOTO_SENSOR_PORT);
-  lightCalibration[2_PHOTO_SENSOR_PORT] = analogRead(2_PHOTO_SENSOR_PORT);
-  lightCalibration[3_PHOTO_SENSOR_PORT] = analogRead(3_PHOTO_SENSOR_PORT);
-  lightCalibration[4_PHOTO_SENSOR_PORT] = analogRead(4_PHOTO_SENSOR_PORT);
+  lightCalibration[] = {
+    analogRead(PHOTO_SENSOR_PORT1),
+    analogRead(PHOTO_SENSOR_PORT2),
+    analogRead(PHOTO_SENSOR_PORT3),
+    analogRead(PHOTO_SENSOR_PORT4),
+  };
 }
 
 void loop() {
-  blinkLed.runCoroutine();
-  printHelloWorld.runCoroutine();
+  checkResistor1.runCoroutine();
+  checkResistor2.runCoroutine();
+  checkResistor3.runCoroutine();
+  checkResistor4.runCoroutine();
 }
