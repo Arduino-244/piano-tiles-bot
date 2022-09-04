@@ -5,14 +5,10 @@
 
   @author Lucas Vieira da Silva
   @version 1.0 4/9/22
-
-  (other information may be added here)
 */
-#include <Servo.h>
-#include <AceRoutine.h>
-using namespace ace_routine;
 
-/* Setting Ports */
+#include <Servo.h>
+
 int PHOTO_SENSOR_PORT1 = 0;
 int PHOTO_SENSOR_PORT2 = 1;
 int PHOTO_SENSOR_PORT3 = 2;
@@ -23,102 +19,92 @@ int SERVO_PORT2 = 5;
 int SERVO_PORT3 = 6;
 int SERVO_PORT4 = 7;
 
-/* Initializing servo objects */
-Servo SERVO_CONTROLLER1;
-Servo SERVO_CONTROLLER2;
-Servo SERVO_CONTROLLER3;
-Servo SERVO_CONTROLLER4;
+const int lightDiff = 50;
+int Id = 0;
 
-/* Util lists */
-int lightCalibration;
-int lightValue;
+class ServoController {
+  private:
+    byte pin;
+    Servo controller;
+  public:
+    ServoController(byte pin) {
+      this->pin = pin;
+      init();
+    };
+    void init() {
+      controller.attach(pin);
+      controller.write(0);
+    };
+    void change_state(boolean state) {
+      controller.write(state ? 180 : 0);
+    };
+};
 
-/* Constants */
-const int CALIBRATION_BALANCE = 50;
-const int DEFAULT_WAIT_TIME = 100;
+class PhotoresistorController {
+  private:
+    byte pin;
+    int lightCalibration;
+    int lightValue;
+  public:
+    PhotoresistorController(byte pin) {
+      this->pin = pin;
+      init();
+    }
+    void init() {
+      byte pin = this->pin;
+      pinMode(pin, OUTPUT);
+      lightCalibration = analogRead(pin);
+    }
+    boolean senses_light() {
+      return lightValue < (lightCalibration - lightDiff);
+    }
+};
 
-void write_servo(int sensorPort, boolean isDark) {
-  Servo servoObject;
-  switch(sensorPort) {
-    case 0:
-      servoObject = SERVO_CONTROLLER1;
-      break;
-    case 1:
-      servoObject = SERVO_CONTROLLER2;
-      break;
-    case 2:
-      servoObject = SERVO_CONTROLLER3;
-      break;
-    case 3:
-      servoObject = SERVO_CONTROLLER4;
-      break;
-  }
-  int angle = isDark ? 120 : 0;
-  servoObject.write(angle);
-}
+class KeyController {
+  private:
+    /* Pin Variables */
+    byte servoPin;
+    byte PRPin;
+    /* Object Variables */
+    ServoController servo;
+    PhotoresistorController photoresistor;
+  public:
+    KeyController(ServoController &s) : servo(s) {
+      this->servo = s;
+    }
+    KeyController(PhotoresistorController &r) : photoresistor(r) {
+      this->photoresistor = r;
+    }
+    KeyController(byte PRPin, byte servoPin) {
+      this->servoPin = servoPin;
+      this->PRPin = PRPin;
+      init();
+    }
+    void init() {
+      Id += 1;
+      Serial.print("Running key (");
+      Serial.print(Id);
+      Serial.println(")");
+    }
+    void analyze_key() {
+      boolean senses_light = photoresistor.senses_light();
+      servo.change_state(senses_light);
+    }
+};
 
-boolean check_photo_resistor(int sensorPort_) {
-  lightValue[sensorPort] = analogRead(sensorPort);
-  return 
-    lightValue[sensorPort] < 
-    (lightCalibration[sensorPort] - CALIBRATION_BALANCE);
-}
-
-COROUTINE(checkResistor1) {
-  COROUTINE_LOOP() {
-    write_servo(PHOTO_SENSOR_PORT1, check_photo_resistor(PHOTO_SENSOR_PORT1));
-    COROUTINE_DELAY(DEFAULT_WAIT_TIME);
-  }
-}
-
-COROUTINE(checkResistor2) {
-  COROUTINE_LOOP() {
-    write_servo(PHOTO_SENSOR_PORT2, check_photo_resistor(PHOTO_SENSOR_PORT2));
-    COROUTINE_DELAY(DEFAULT_WAIT_TIME);
-  }
-}
-
-COROUTINE(checkResistor3) {
-  COROUTINE_LOOP() {
-    write_servo(PHOTO_SENSOR_PORT3, check_photo_resistor(PHOTO_SENSOR_PORT3));
-    COROUTINE_DELAY(DEFAULT_WAIT_TIME);
-  }
-}
-
-COROUTINE(checkResistor4) {
-  COROUTINE_LOOP() {
-    write_servo(PHOTO_SENSOR_PORT4, check_photo_resistor(PHOTO_SENSOR_PORT4));
-    COROUTINE_DELAY(DEFAULT_WAIT_TIME);
-  }
-}
+KeyController key1(PHOTO_SENSOR_PORT1, SERVO_PORT1)
+KeyController key2(PHOTO_SENSOR_PORT2, SERVO_PORT2)
+KeyController key3(PHOTO_SENSOR_PORT3, SERVO_PORT3)
+KeyController key4(PHOTO_SENSOR_PORT4, SERVO_PORT4)
 
 void setup() {
   delay(1000);
-  Serial.begin(115200);
-  /*Avoid issues with serial taking a while to load*/
-  while (!Serial);
-  /*Attaching servos°*/
-  SERVO_CONTROLLER1.attach(SERVO_PORT1);
-  SERVO_CONTROLLER2.attach(SERVO_PORT2);
-  SERVO_CONTROLLER3.attach(SERVO_PORT3);
-  SERVO_CONTROLLER4.attach(SERVO_PORT4);
-  /*Reseting servos to 0°*/
-  SERVO_CONTROLLER1.write(0);
-  SERVO_CONTROLLER2.write(0);
-  SERVO_CONTROLLER3.write(0);
-  SERVO_CONTROLLER4.write(0);
-  /*Initializing calibration*/
-  lightCalibration[] = {
-    analogRead(PHOTO_SENSOR_PORT1),
-    analogRead(PHOTO_SENSOR_PORT2),
-    analogRead(PHOTO_SENSOR_PORT3),
-    analogRead(PHOTO_SENSOR_PORT4),
-  };
 }
 
 void loop() {
-  checkResistor1.runCoroutine();
-  checkResistor2.runCoroutine();
-  checkResistor3.runCoroutine();
-  checkResistor4.runCoroutine();
+  key1.analyze_key();
+  key2.analyze_key();
+  key3.analyze_key();
+  key4.analyze_key();
+  delay(100);
 }
