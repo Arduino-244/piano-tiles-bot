@@ -15,4 +15,4 @@
   
 
 
-Developed for **ExpoEtec** event! 💙
+Developed for the **ExpoEtec** event! 💙
